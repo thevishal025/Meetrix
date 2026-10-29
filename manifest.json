@@ -1,0 +1,63 @@
+{
+  "manifest_version": 3,
+  "name": "Meetrix - Smart Meeting Attendance Tracker",
+  "version": "1.1.0",
+  "description": "Google Meet attendance, participant, camera, device, and caption tracking. 100% local — no external servers.",
+  "icons": {
+    "16": "icons/icon16.png",
+    "48": "icons/icon48.png",
+    "128": "icons/icon128.png"
+  },
+  "action": {
+    "default_title": "Meetrix - Attendance Tracker",
+    "default_popup": "popup.html",
+    "default_icon": {
+      "16": "icons/icon16.png",
+      "48": "icons/icon48.png",
+      "128": "icons/icon128.png"
+    }
+  },
+  "permissions": [
+    "storage",
+    "downloads",
+    "activeTab",
+    "scripting"
+  ],
+  "host_permissions": [
+    "https://meet.google.com/*",
+    "http://127.0.0.1:8787/*"
+  ],
+  "background": {
+    "service_worker": "background.js"
+  },
+  "content_scripts": [
+    {
+      "matches": [
+        "https://meet.google.com/*"
+      ],
+      "js": [
+        "storage.js",
+        "branding.js",
+        "device-detector.js",
+        "camera-detector.js",
+        "presentation-detector.js",
+        "participant-detector.js",
+        "attendance.js",
+        "report-generator.js",
+        "caption-manager.js",
+        "content.js"
+      ],
+      "run_at": "document_idle"
+    }
+  ],
+  "web_accessible_resources": [
+    {
+      "resources": [
+        "icons/*.png"
+      ],
+      "matches": [
+        "https://meet.google.com/*"
+      ]
+    }
+  ]
+}

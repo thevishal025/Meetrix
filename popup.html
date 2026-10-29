@@ -1,0 +1,268 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Meetrix - Attendance Tracker</title>
+  <link rel="stylesheet" href="popup.css">
+</head>
+
+<body>
+  <div class="app-container">
+    <!-- Header -->
+    <header class="app-header">
+      <div class="brand-group">
+        <div class="logo-mark">
+          <img src="icons/icon48.png" alt="MEETRIX AI" class="brand-logo-img" />
+        </div>
+        <div class="brand-text">
+          <div class="brand-title">MEETRIX <span class="brand-ai-badge">AI</span></div>
+        </div>
+      </div>
+      <div class="header-right">
+        <div class="status-indicator" id="meetingStatusBadge">
+          <span class="status-dot" id="statusDot"></span>
+          <span class="status-label" id="statusLabel">Checking...</span>
+        </div>
+        <!-- Tab switcher -->
+        <div class="tab-switcher">
+          <button class="tab-btn active" id="tabAttendance" title="Attendance">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" />
+              <circle cx="9" cy="7" r="4" />
+              <path d="M23 21v-2a4 4 0 0 0-3-3.87" />
+              <path d="M16 3.13a4 4 0 0 1 0 7.75" />
+            </svg>
+          </button>
+          <button class="tab-btn" id="tabTranscript" title="Transcript">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
+            </svg>
+          </button>
+        </div>
+      </div>
+    </header>
+
+    <!-- Main Content Area -->
+    <main class="main-content" id="mainContent">
+
+      <!-- ==================== ATTENDANCE TAB ==================== -->
+      <div id="attendanceTab" class="tab-panel active">
+
+        <!-- Active Meeting View -->
+        <section class="meeting-view" id="meetingView">
+          <!-- Summary Bar -->
+          <div class="summary-bar">
+            <div class="summary-chip">
+              <span class="chip-label">Participants observed</span>
+              <span class="chip-val" id="observedCount">0</span>
+            </div>
+            <div class="summary-chip">
+              <span class="chip-label">Currently presenting</span>
+              <span class="chip-val" id="presentingCount">0</span>
+            </div>
+          </div>
+
+          <!-- Tracking Control Bar -->
+          <div class="tracking-control-bar" id="trackingControlBar">
+            <div class="tracking-status" id="trackingStatusText">
+              <span class="tracking-dot active" id="trackingDot"></span>
+              <span id="trackingLabel">Tracking Active</span>
+            </div>
+            <button class="btn btn-track-toggle" id="trackingToggleBtn" title="Start or stop tracking">
+              <svg class="track-icon-stop" id="trackStopIcon" width="14" height="14" viewBox="0 0 24 24" fill="none"
+                stroke="currentColor" stroke-width="2">
+                <rect x="6" y="6" width="12" height="12" rx="1" />
+              </svg>
+              <svg class="track-icon-start hidden" id="trackStartIcon" width="14" height="14" viewBox="0 0 24 24"
+                fill="none" stroke="currentColor" stroke-width="2">
+                <polygon points="6,3 20,12 6,21" />
+              </svg>
+              <span id="trackBtnLabel">Stop</span>
+            </button>
+          </div>
+
+          <!-- Presenter Banner (if active) -->
+          <div class="presenter-banner hidden" id="presenterBanner">
+            <span class="presenter-icon">📽️</span>
+            <span class="presenter-text" id="presenterText">Presenter: -</span>
+          </div>
+
+          <!-- Participant Table Container -->
+          <div class="table-container">
+            <table class="participant-table">
+              <thead>
+                <tr>
+                  <th class="th-name">Name</th>
+                  <th class="th-camera">Camera</th>
+                  <th class="th-device">Device</th>
+                  <th class="th-status">Status</th>
+                </tr>
+              </thead>
+              <tbody id="participantTableBody">
+                <!-- Dynamically populated rows -->
+              </tbody>
+            </table>
+            <div class="empty-state hidden" id="emptyParticipantsState">
+              No participants detected yet. Waiting for Meet participants to load...
+            </div>
+          </div>
+
+          <!-- Participant Detail Drawer (expandable) -->
+          <div class="detail-drawer hidden" id="detailDrawer">
+            <div class="drawer-header">
+              <span class="drawer-title" id="drawerName">Participant Details</span>
+              <button class="drawer-close-btn" id="closeDrawerBtn" title="Close details">&times;</button>
+            </div>
+            <div class="drawer-grid">
+              <div class="drawer-item">
+                <span class="drawer-label">Identifier</span>
+                <span class="drawer-val" id="drawerId">-</span>
+              </div>
+              <div class="drawer-item">
+                <span class="drawer-label">Identity Confidence</span>
+                <span class="drawer-val" id="drawerConfidence">-</span>
+              </div>
+              <div class="drawer-item">
+                <span class="drawer-label">First Observed</span>
+                <span class="drawer-val" id="drawerFirstSeen">-</span>
+              </div>
+              <div class="drawer-item">
+                <span class="drawer-label">Estimated Join</span>
+                <span class="drawer-val" id="drawerJoinTime">-</span>
+              </div>
+              <div class="drawer-item">
+                <span class="drawer-label">Estimated Leave</span>
+                <span class="drawer-val" id="drawerLeaveTime">-</span>
+              </div>
+              <div class="drawer-item">
+                <span class="drawer-label">Observed Duration</span>
+                <span class="drawer-val" id="drawerDuration">-</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Actions Footer -->
+          <footer class="app-footer">
+            <button class="btn btn-primary" id="downloadReportBtn"
+              title="Save or retry the self-contained HTML meeting report">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4M7 10l5 5 5-5M12 15V3" />
+              </svg>
+              <span>Download Report</span>
+            </button>
+            <button class="btn btn-secondary" id="downloadCsvBtn" title="Download Attendance CSV only">
+              <span>CSV</span>
+            </button>
+            <button class="btn btn-secondary" id="newSessionBtn" title="Start new session">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M23 4v6h-6M1 20v-6h6" />
+                <path d="M3.51 9a9 9 0 0114.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0020.49 15" />
+              </svg>
+              <span>New</span>
+            </button>
+          </footer>
+        </section>
+
+        <!-- Inactive / No Meet View -->
+        <section class="inactive-view hidden" id="inactiveView">
+          <div class="inactive-card">
+            <div class="inactive-icon">
+              <img src="icons/icon128.png" alt="MEETRIX AI" class="inactive-brand-logo" />
+            </div>
+            <h3>Google Meet is not active</h3>
+            <p>Open or navigate to a Google Meet call (meet.google.com) to automatically track attendance.</p>
+            <div class="previous-session-box hidden" id="previousSessionBox">
+              <div class="prev-title">Previous Session Available</div>
+              <div class="prev-desc" id="prevSessionDesc">Meeting: -</div>
+              <button class="btn btn-secondary btn-sm" id="downloadPrevReportBtn">Download Previous Report</button>
+            </div>
+          </div>
+        </section>
+
+      </div> <!-- /attendanceTab -->
+
+      <!-- ==================== TRANSCRIPT TAB ==================== -->
+      <div id="transcriptTab" class="tab-panel hidden">
+
+        <!-- Caption Controls -->
+        <div class="caption-control-bar">
+          <div class="caption-status-group">
+            <span class="tracking-dot" id="captionDot"></span>
+            <span class="caption-status-text" id="captionStatusText">Captions inactive</span>
+          </div>
+          <div class="caption-btn-group">
+            <button class="btn btn-track-toggle" id="captionToggleBtn" title="Start/Stop caption transcription">
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M12 20h9" />
+                <path d="M16.5 3.5a2.121 2.121 0 013 3L7 19l-4 1 1-4L16.5 3.5z" />
+              </svg>
+              <span id="captionToggleBtnLabel">Start</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- Caption Unavailable Notice -->
+        <div class="caption-unavailable hidden" id="captionUnavailableNotice">
+          <span>⚠️</span>
+          <span id="captionUnavailableText">Captions not detected. Enable captions in Google Meet:</span>
+          <button class="btn btn-primary btn-xs" id="enableMeetCaptionsBtn"
+            style="margin-left:auto;font-size:10px;padding:3px 8px;border-radius:4px;cursor:pointer;white-space:nowrap;background:var(--accent-yellow);color:#09090b;border:none;font-weight:700;">Turn
+            ON CC</button>
+        </div>
+
+        <!-- Transcript Lines Container -->
+        <div class="transcript-container" id="transcriptContainer">
+          <div class="transcript-empty" id="transcriptEmpty">
+            No transcript yet. Start transcription and enable captions in Google Meet.
+          </div>
+          <div id="transcriptLines" class="transcript-lines"></div>
+        </div>
+
+        <!-- Transcript Footer -->
+        <footer class="transcript-footer">
+          <button class="btn btn-secondary btn-sm" id="downloadTxtBtn" title="Download transcript as TXT">
+            TXT
+          </button>
+          <button class="btn btn-secondary btn-sm" id="downloadSrtBtn" title="Download as SRT subtitles">
+            SRT
+          </button>
+          <button class="btn btn-secondary btn-sm" id="clearTranscriptBtn" title="Clear transcript">
+            Clear
+          </button>
+          <div class="transcript-count" id="transcriptCount">0 lines</div>
+        </footer>
+
+      </div> <!-- /transcriptTab -->
+
+    </main>
+
+    <!-- Confirm Reset Modal -->
+    <div class="modal-backdrop hidden" id="confirmModal">
+      <div class="modal-box">
+        <div class="modal-title">Start New Session?</div>
+        <div class="modal-body">
+          Current meeting attendance records will be cleared for a new tracking session. This cannot be undone.
+        </div>
+        <div class="modal-actions">
+          <button class="btn btn-secondary" id="cancelResetBtn">Cancel</button>
+          <button class="btn btn-danger" id="confirmResetBtn">Start New</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Connection Error Banner -->
+    <div class="connection-error hidden" id="connectionError">
+      <span class="error-icon">⚠️</span>
+      <span class="error-text" id="connectionErrorText">Content script not loaded. Retrying...</span>
+    </div>
+  </div>
+
+  <script src="storage.js"></script>
+  <script src="branding.js"></script>
+  <script src="report-generator.js"></script>
+  <script src="popup.js"></script>
+</body>
+
+</html>
